@@ -213,7 +213,7 @@
                 
                 milliseconds = (new Date(date_[2], date_[1] - 1, date_[0]).getTime());
                 
-                return "" + milliseconds;
+                return Number(milliseconds);
             }
 			
 			
@@ -366,7 +366,7 @@
                 return Math.floor(Math.random() * (to - from + 1) + from);
             }
 			
-			points = randomNumber(2, 200);
+			points = randomNumber(2, 30);
 			area = randomNumber(0, 1);
 			minYdummyData = randomNumber(-50000000, 50000000);
 			maxYdummyData =  minYdummyData + (randomNumber(-50000000, 50000000));
@@ -383,8 +383,8 @@
 			
 			var minMilliseconds,maxMilliseconds;
 			
-			// NOT WORKING!!!
-            for (var i = 0; i < points; i++) {
+
+            for (var i = 0; i < data.length; i++) {
 				
 				milliseconds = getTimeMilliseconds(dates[i]);
 				
@@ -403,12 +403,35 @@
 				
             }
 			
-            minMilliseconds = Number(getTimeMilliseconds(dates[0]));
-            maxMilliseconds = Number(getTimeMilliseconds(dates[dates.length - 1]));
+			
+			
+			
+			
+			
+			
+			
+            //minMilliseconds = Number(getTimeMilliseconds(dates[0]));
+            //maxMilliseconds = Number(getTimeMilliseconds(dates[dates.length - 1]));
 			
 			
 			var xScope = maxMilliseconds - minMilliseconds;
 			
+			
+			var minSpaceBetweenBars = xScope;			
+            for (var i = 0; i < data.length - 1; i++) {
+				var mm0 = getTimeMilliseconds(dates[i]);
+				var mm1 = getTimeMilliseconds(dates[i + 1]);
+				var mm = mm1 - mm0;
+				if(minSpaceBetweenBars > mm){
+					minSpaceBetweenBars = 0 + mm;
+				}
+            }		
+			
+			minMilliseconds -= (minSpaceBetweenBars / 2);
+			
+			maxMilliseconds += (minSpaceBetweenBars / 2);			
+			
+			 xScope = maxMilliseconds - minMilliseconds;
 			
 			console.log( '--------------' );
 			console.log( minMilliseconds );
@@ -420,7 +443,7 @@
 			
 			
             var xAxisScalePoint = 0;
-            for (i = 1; i < xAxisScaleTemplateSets.length; i += 1) {
+            for (i = 0; i < xAxisScaleTemplateSets.length; i += 1) {
                 if (xAxisScaleTemplateSets[i].scope > xScope) {
                     break;
                 }
@@ -428,7 +451,7 @@
             }
 			
 			console.log(xAxisScaleTemplateSets[xAxisScalePoint].alert);
-				
+			
 			
 			
 			var pageHeight = $(window).height();
@@ -444,6 +467,12 @@
 			var chartY = margin;
 			var chartWidth = pageWidth - margin - margin;
 			var chartHeight = pageHeight - margin - margin;
+			
+			
+	
+				
+			
+			
 			
 			// background
 			canvas.path("M" + margin + "," + margin + "l" + chartWidth + ",0l0,"  + chartHeight + "l-" + chartWidth + ",0z"  ).attr({'stroke-width':"0","fill":"#ededed"});
@@ -464,7 +493,16 @@
                 if(minDataPoint > data[i]){
 					minDataPoint = data[i];
 				}				
-            }			
+            }
+			
+			if(maxDataPoint > 0 && minDataPoint > 0){
+				minDataPoint = 0;
+			}
+			
+			if(maxDataPoint < 0 && minDataPoint < 0){
+				maxDataPoint = 0;
+			}					
+					
 			
 			//alert( maxDataPoint + " " + minDataPoint);
 			
@@ -561,7 +599,7 @@
 
                 canvas.path(path_).attr({
 					'stroke': "red",
-					'stroke-width':3
+					'stroke-width': ((minSpaceBetweenBars * xMultiplier) / 2) - 4
 				});
 
             }
@@ -608,7 +646,7 @@
 			// test
 			//canvas.text(x_ , (margin + chartHeight + 10), getTimeMilliseconds(dates[0])).attr("text-anchor","middle");
 			
-			x_ += (  getTimeMilliseconds(dates[dates.length - 1]) - minMilliseconds ) * xMultiplier;
+			x_ += xScope * xMultiplier;
 
 			canvas.path("M" + x_ + "," + margin + "l0," + chartHeight ).attr('stroke', "black");
 			
